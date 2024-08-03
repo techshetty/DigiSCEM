@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Pratheek</title>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
+	<style type="text/css">
+		* {
+			margin: 0;
+			padding: 0;
+			font-family: 'Dosis', sans-serif;
+			transition: all 250ms ease-in-out;
+		}
+        body{
+            background-image: url("/assets/food_bg.avif");
+            background-size: cover;
+        }
+		#lForm {
+			width: 80%;
+			max-width: 400px;
+			height: 60vh;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			align-items: center;
+			background-color: rgba(0, 0, 0, 0.75);
+			color: lime;
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			border-radius: 30px;
+			padding: 20px;
+		}
+		.lf {
+			width: 100%;
+			height: 40px;
+			background-color: black;
+			color: lime;
+			outline: none;
+			border: none;
+			border-radius: 20px;
+			font-size: 16px;
+			font-weight: bold;
+			padding-left: 10px;
+		}
+		#slink {
+			text-decoration: underline;
+			color: #fff;
+			font-size: 14px;
+			margin-top: 20px;
+			font-weight: bold;
+			opacity: 0.8;
+			text-align: center;
+		}
+		#lhead {
+			margin-top: 10px;
+			font-size: 24px;
+			letter-spacing: 1.5px;
+			font-weight: bolder;
+			color: #fff;
+			text-align: center;
+		}
+		#sub {
+			padding: 10px;
+			font-size: 18px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			border: none;
+			outline: none;
+			width: 100%;
+			max-width: 150px;
+			height: 40px;
+			font-weight: bolder;
+			border-radius: 10px;
+			background-color: lightblue;
+		}
+		.lf:focus {
+			width: 100%;
+		}
+		#slink:hover {
+			opacity: 1;
+			cursor: pointer;
+		}
+		.btn-normal:hover {
+			cursor: pointer;
+			transform: scale(1.1);
+		}
+		@media (max-width: 480px) {
+			#lhead {
+				font-size: 20px;
+			}
+			#sub {
+				font-size: 16px;
+				height: 35px;
+			}
+			.lf {
+				font-size: 14px;
+			}
+			#slink {
+				font-size: 12px;
+				pointer-events: none;
+			}
+		}
+        #idname{
+            border: 2px solid purple;
+            background-color: #292525;
+        }
+        #scamlogo{
+            // position: absolute;
+            width: 480px;
+            height: 250px;
+        }
+        #camera{
+            width: 100%;
+            height: 100%;
+        }
+	</style>
+</head>
+<body>
+<div id="lForm">
+	<span id="lhead">DIGI<span style="color: lime;">SCEM</span> - Redeem Ticket</span>
+    <div id="scamlogo">
+    <video id="camera"></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    </div>
+	<input type="text" placeholder="Enter ticket ID: " class="lf" id="idname" required>
+	<button id="sub" class="btn-normal" onclick="verStat('',true)">Redeem Now</button>
+	<span id="slink">Leave a review..</span>
+</div>
+<script>
+    var apires=null;
+    var clg=true;
+    const verStat=(data,dnt)=>{
+        if(dnt)
+        var tid=document.querySelector("#idname").value;
+        else tid=data;
+        const myHeaders = new Headers();
+myHeaders.append("Content-Type", "application/json");
+const raw = JSON.stringify({
+  "id": tid.toLowerCase()
+});
+
+const requestOptions = {
+  method: "POST",
+  headers: myHeaders,
+  body: raw,
+  redirect: "follow"
+};
+
+fetch("http://localhost:3000/redeem-ticket", requestOptions)
+  .then((response) => response.json())
+  .then((result) => {console.log(result); apires=result;userReply(result);})
+  .catch((error) => console.error(error));
+    }
+    const userReply=(res)=>{
+            if(!res.item){
+                swal("Sorry, this ticket is invalid","","error");
+                return;
+            }
+            if(!res.alr){
+        swal("Your "+apires["item"]+" has been redeemed successfully","","success");
+        return
+    }
+    else{
+        swal("Your "+apires["item"]+" has already been redeemed","","warning");
+
+    }
+    }
+</script>
+<script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
+    <script>
+        const video = document.getElementById('camera');
+        const canvas = document.getElementById('canvas');
+        const resultDiv = document.getElementById('result');
+        const canvasContext = canvas.getContext('2d');
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = stream;
+                video.setAttribute('playsinline', true);
+                video.play();
+                requestAnimationFrame(scanQRCode);
+            } catch (err) {
+                console.error('Error accessing camera:', err);
+                alert('Unable to access camera.');
+            }
+        }
+        function scanQRCode() {
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.height = video.videoHeight;
+                canvas.width = video.videoWidth;
+                canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
+
+                const code = jsQR(imageData.data, canvas.width, canvas.height, { inversionAttempts: "dontInvert" });
+                if (code) {
+                    console.log('QR Code detected:', code.data); // Debugging: Log QR Code data
+                    // alert(code.data);
+                    if(clg){
+					clg=false;
+					setTimeout(()=>{clg=true;console.log(clg)},3000);
+					verStat(code.data,false);}
+                } else {
+                    console.log('No QR Code detected'); // Debugging: Log when no QR Code is detected
+                }
+            }
+            requestAnimationFrame(scanQRCode);
+        }
+
+        startCamera();
+    </script>
+</body>
+</html>

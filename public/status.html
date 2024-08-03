@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Pratheek</title>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
+	<style type="text/css">
+		* {
+			margin: 0;
+			padding: 0;
+			font-family: 'Dosis', sans-serif;
+			transition: all 250ms ease-in-out;
+		}
+        body{
+            background-image: url("/assets/food_bg.avif");
+            background-size: cover;
+        }
+		#lForm {
+			width: 80%;
+			max-width: 400px;
+			height: 60vh;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			align-items: center;
+			background-color: rgba(0, 0, 0, 0.75);
+			color: lime;
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			border-radius: 30px;
+			padding: 20px;
+		}
+		.lf {
+			width: 100%;
+			height: 40px;
+			background-color: black;
+			color: lime;
+			outline: none;
+			border: none;
+			border-radius: 20px;
+			font-size: 16px;
+			font-weight: bold;
+			padding-left: 10px;
+		}
+		#slink {
+			text-decoration: underline;
+			color: #fff;
+			font-size: 14px;
+			margin-top: 20px;
+			font-weight: bold;
+			opacity: 0.8;
+			text-align: center;
+		}
+		#lhead {
+			margin-top: 10px;
+			font-size: 24px;
+			letter-spacing: 1.5px;
+			font-weight: bolder;
+			color: #fff;
+			text-align: center;
+		}
+		#sub {
+			padding: 10px;
+			font-size: 18px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			border: none;
+			outline: none;
+			width: 100%;
+			max-width: 150px;
+			height: 40px;
+			font-weight: bolder;
+			border-radius: 10px;
+			background-color: lightblue;
+		}
+		.lf:focus {
+			width: 100%;
+		}
+		#slink:hover {
+			opacity: 1;
+			cursor: pointer;
+		}
+		.btn-normal:hover {
+			cursor: pointer;
+			transform: scale(1.1);
+		}
+		@media (max-width: 480px) {
+			#lhead {
+				font-size: 20px;
+			}
+			#sub {
+				font-size: 16px;
+				height: 35px;
+			}
+			.lf {
+				font-size: 14px;
+			}
+			#slink {
+				font-size: 12px;
+                // pointer-events: none;
+			}
+		}
+        #idname{
+            border: 2px solid purple;
+            background-color: #292525;
+        }
+        #scamlogo{
+            // position: absolute;
+            width: 150px;
+            height: 150px;
+            background-image: url("/assets/scemlogo.png");
+            background-size: cover;
+            // margin-top: 20px;
+            // border: 1px solid red;
+        }
+	</style>
+</head>
+<body>
+<div id="lForm">
+	<span id="lhead">DIGI<span style="color: lime;">SCEM</span> - Ticket Status</span>
+    <div id="scamlogo"></div>
+	<input type="text" placeholder="Enter ticket ID: " class="lf" id="idname" required>
+	<button id="sub" class="btn-normal" onclick="verStat()">Check Status</button>
+	<span id="slink" onclick="window.location.href='/redeem'">Redeem your item now?</span>
+</div>
+<script>
+    var apires=null;
+    const verStat=()=>{
+        var tid=document.querySelector("#idname").value;
+        const myHeaders = new Headers();
+myHeaders.append("Content-Type", "application/json");
+const raw = JSON.stringify({
+  "id": tid.toLowerCase()
+});
+
+const requestOptions = {
+  method: "POST",
+  headers: myHeaders,
+  body: raw,
+  redirect: "follow"
+};
+
+fetch("http://192.168.192.201:3000/ticket-status", requestOptions)
+  .then((response) => response.json())
+  .then((result) => {console.log(result); apires=result;userReply(result);})
+  .catch((error) => console.error(error));
+    }
+    const userReply=(res)=>{
+            if(!res.item){
+                swal("Sorry, this ticket is invalid","","error");
+                return;
+            }
+            if(!res.red){
+        swal("Your ticket for "+apires["item"]+" is Valid","","success");
+        return
+    }
+    else{
+        swal("Your "+apires["item"]+" has already been redeemed","","warning");
+
+    }
+    }
+</script>
+</body>
+</html>
